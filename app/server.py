@@ -249,7 +249,7 @@ DASHBOARD_HTML = f"""<!doctype html>
           labels: data.by_project.map(x => x.project_name),
           datasets: [{{ data: data.by_project.map(x => x.hours), backgroundColor: isLight ? ["#050a0f", "#2b4c6f", "#5b86ad"] : ["#d4f1ff", "#7cc6ee", "#3a7ca5"], borderWidth: 0 }}]
         }},
-        options: {{ plugins: {{ legend: {{ labels: {{ color: txtColor }} }} }} }}
+        options: {{ animation: false, plugins: {{ legend: {{ labels: {{ color: txtColor }} }} }} }}
       }});
     }}
 

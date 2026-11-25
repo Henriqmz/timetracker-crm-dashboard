@@ -109,7 +109,7 @@ def make_handler(db: AnalyticsDB, admin_user: str, admin_pass: str, totp_secret:
 
         def do_GET(self) -> None:
             if self.path == "/login":
-                self._send_html(LOGIN_HTML.format(error_block=""))
+                self._send_html(LOGIN_HTML.replace("{error_block}", ""))
                 return
             if not self._is_authenticated():
                 self.send_response(302)
@@ -144,7 +144,7 @@ def make_handler(db: AnalyticsDB, admin_user: str, admin_pass: str, totp_secret:
                 self.end_headers()
                 return
             err = f'<div class="err">{html.escape("Credenciais ou código 2FA inválidos.")}</div>'
-            self._send_html(LOGIN_HTML.format(error_block=err), status=401)
+            self._send_html(LOGIN_HTML.replace("{error_block}", err), status=401)
 
     return DashboardHandler
 

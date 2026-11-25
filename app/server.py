@@ -131,13 +131,13 @@ DASHBOARD_HTML = f"""<!doctype html>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     {COMMON_THEME_CSS}
-    body {{ padding: 26px 18px 42px; }}
+    body {{ padding: 0; }}
     .shell {{
-      max-width: 1160px; margin: 0 auto; background: var(--surface);
-      border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden;
+      width: 100%; min-height: 100vh;
     }}
     .shell-header {{
-      padding: 20px 26px; border-bottom: 1px solid var(--border); background: var(--surface-2);
+      padding: 18px max(24px, calc((100% - 1160px) / 2));
+      border-bottom: 1px solid var(--border); background: var(--surface);
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;
     }}
     .brand {{ display: flex; align-items: center; gap: 0.8rem; }}
@@ -147,7 +147,11 @@ DASHBOARD_HTML = f"""<!doctype html>
     }}
     .brand-title {{ font-weight: 800; font-size: 1.08rem; }}
     .brand-sub {{ font-size: 0.78rem; color: var(--muted); }}
-    .shell-body {{ padding: 24px 26px; }}
+    .shell-body {{
+      width: min(1160px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 26px 0 40px;
+    }}
     .kpi-grid {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.9rem; margin-bottom: 20px; }}
     .kpi {{
       background: var(--surface-2); border: 1px solid var(--border); border-left: 4px solid var(--accent);

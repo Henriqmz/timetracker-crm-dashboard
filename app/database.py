@@ -106,6 +106,19 @@ class AnalyticsDB:
                     "SELECT severity, user_name, work_date, message FROM audit_alerts ORDER BY id DESC LIMIT 20"
                 )
             ]
+            entries = [
+                {
+                    "entry_id": r["entry_id"],
+                    "user_name": r["user_name"],
+                    "project_name": r["project_name"],
+                    "task_title": r["task_title"],
+                    "work_date": r["work_date"],
+                    "hours": round(r["duration_minutes"] / 60.0, 2),
+                }
+                for r in conn.execute(
+                    "SELECT entry_id, user_name, project_name, task_title, work_date, duration_minutes FROM time_entries ORDER BY work_date DESC, entry_id DESC LIMIT 50"
+                )
+            ]
             total_mins = conn.execute("SELECT COALESCE(SUM(duration_minutes), 0) FROM time_entries").fetchone()[0]
             return {
                 "total_hours": round(total_mins / 60.0, 2),
@@ -113,4 +126,5 @@ class AnalyticsDB:
                 "by_project": by_project,
                 "by_day": by_day,
                 "alerts": alerts,
+                "entries": entries,
             }

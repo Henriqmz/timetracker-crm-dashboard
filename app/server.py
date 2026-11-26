@@ -26,6 +26,7 @@ COMMON_THEME_CSS = """
     --muted: #9ab3c8;
     --accent: #d4f1ff;
     --accent-ink: #050a0f;
+    --accent-soft: rgba(212, 241, 255, 0.11);
     --accent-border: rgba(212, 241, 255, 0.34);
     --border: rgba(212, 241, 255, 0.14);
     --shadow: 0 24px 54px rgba(0, 0, 0, 0.55);
@@ -39,6 +40,7 @@ COMMON_THEME_CSS = """
     --muted: #395064;
     --accent: #050a0f;
     --accent-ink: #f0f7fc;
+    --accent-soft: rgba(5, 10, 15, 0.08);
     --accent-border: rgba(5, 10, 15, 0.3);
     --border: rgba(5, 10, 15, 0.14);
     --shadow: 0 18px 40px rgba(5, 10, 15, 0.1);
@@ -56,7 +58,7 @@ COMMON_THEME_CSS = """
     display: inline-flex; align-items: center; gap: 0.45rem;
     padding: 0.45rem 0.85rem; border-radius: 999px;
     border: 1px solid var(--accent-border); background: var(--surface); color: var(--text);
-    font: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+    font: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; text-decoration: none;
   }
   .theme-btn:hover { background: var(--surface-hover); }
 """
@@ -73,19 +75,24 @@ LOGIN_HTML = f"""<!doctype html>
     body {{ display: grid; place-items: center; padding: 24px; }}
     .card {{
       background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent);
-      padding: 2rem; border-radius: 18px; width: min(390px, 100%); box-shadow: var(--shadow);
+      padding: 2rem; border-radius: 18px; width: min(405px, 100%); box-shadow: var(--shadow);
     }}
     .top {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }}
     h1 {{ font-size: 1.22rem; margin: 0; font-weight: 800; }}
     p {{ margin: 0.35rem 0 0; font-size: 0.84rem; color: var(--muted); }}
-    label {{ display: block; margin-top: 1rem; font-size: 0.82rem; font-weight: 600; color: var(--muted); }}
+    label {{ display: block; margin-top: 0.95rem; font-size: 0.82rem; font-weight: 600; color: var(--muted); }}
     input {{
       width: 100%; padding: 0.65rem 0.8rem; margin-top: 0.3rem; border-radius: 9px;
       border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit;
     }}
     .submit-btn {{
-      width: 100%; margin-top: 1.5rem; padding: 0.78rem; border: 0; border-radius: 10px;
+      width: 100%; margin-top: 1.35rem; padding: 0.78rem; border: 0; border-radius: 10px;
       background: var(--accent); color: var(--accent-ink); font: inherit; font-weight: 800; cursor: pointer;
+    }}
+    .demo-btn {{
+      width: 100%; margin-top: 0.6rem; padding: 0.6rem; border-radius: 9px;
+      border: 1px dashed var(--accent-border); background: var(--accent-soft); color: var(--text);
+      font: inherit; font-size: 0.79rem; font-weight: 700; cursor: pointer;
     }}
     .err {{ color: #fca5a5; font-size: 0.84rem; margin-top: 0.75rem; }}
   </style>
@@ -99,11 +106,12 @@ LOGIN_HTML = f"""<!doctype html>
       </div>
       <button id="themeToggle" class="theme-btn" type="button"><span id="themeIcon">☀</span></button>
     </div>
-    <label>Usuário<input name="username" value="admin" required /></label>
-    <label>Senha<input type="password" name="password" required /></label>
-    <label>Código 2FA (6 dígitos)<input name="totp" inputmode="numeric" maxlength="6" placeholder="000000" required /></label>
+    <label>Usuário<input id="fUser" name="username" value="admin" required /></label>
+    <label>Senha<input id="fPass" type="password" name="password" required /></label>
+    <label>Código 2FA (6 dígitos)<input id="fTotp" name="totp" inputmode="numeric" maxlength="6" placeholder="000000" required /></label>
     {{error_block}}
     <button class="submit-btn" type="submit">Entrar no Painel</button>
+    {{demo_helper}}
   </form>
   <script>
     const root = document.documentElement;
@@ -116,6 +124,15 @@ LOGIN_HTML = f"""<!doctype html>
     document.getElementById("themeToggle").addEventListener("click", () => {{
       applyTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
     }});
+    const demoBtn = document.getElementById("fillDemoBtn");
+    if (demoBtn) {{
+      demoBtn.addEventListener("click", async () => {{
+        const data = await (await fetch("/api/demo-totp")).json();
+        document.getElementById("fUser").value = data.username;
+        document.getElementById("fPass").value = data.password;
+        document.getElementById("fTotp").value = data.totp;
+      }});
+    }}
   </script>
 </body>
 </html>
@@ -132,11 +149,8 @@ DASHBOARD_HTML = f"""<!doctype html>
   <style>
     {COMMON_THEME_CSS}
     body {{ padding: 0; }}
-    .shell {{
-      width: 100%; min-height: 100vh;
-    }}
     .shell-header {{
-      padding: 18px max(24px, calc((100% - 1160px) / 2));
+      padding: 18px max(24px, calc((100% - 1180px) / 2));
       border-bottom: 1px solid var(--border); background: var(--surface);
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;
     }}
@@ -148,9 +162,9 @@ DASHBOARD_HTML = f"""<!doctype html>
     .brand-title {{ font-weight: 800; font-size: 1.08rem; }}
     .brand-sub {{ font-size: 0.78rem; color: var(--muted); }}
     .shell-body {{
-      width: min(1160px, calc(100% - 48px));
+      width: min(1180px, calc(100% - 48px));
       margin: 0 auto;
-      padding: 26px 0 40px;
+      padding: 26px 0 44px;
     }}
     .kpi-grid {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.9rem; margin-bottom: 20px; }}
     .kpi {{
@@ -159,7 +173,8 @@ DASHBOARD_HTML = f"""<!doctype html>
     }}
     .kpi-label {{ font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }}
     .kpi-val {{ font-size: 1.7rem; font-weight: 800; color: var(--accent); margin-top: 0.2rem; }}
-    .grid {{ display: grid; grid-template-columns: 1.1fr 0.9fr 1fr; gap: 1rem; }}
+    .grid {{ display: grid; grid-template-columns: 1.1fr 0.9fr 1fr; gap: 1rem; margin-bottom: 18px; }}
+    .bottom-grid {{ display: grid; grid-template-columns: 0.95fr 1.35fr; gap: 1rem; }}
     .card {{
       background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; padding: 1.2rem;
     }}
@@ -170,10 +185,13 @@ DASHBOARD_HTML = f"""<!doctype html>
       font-size: 0.83rem; line-height: 1.45;
     }}
     li:last-child {{ border-bottom: 0; }}
+    table {{ width: 100%; border-collapse: collapse; font-size: 0.83rem; }}
+    th, td {{ text-align: left; padding: 0.65rem 0.55rem; border-bottom: 1px solid var(--border); }}
+    th {{ font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }}
     .mono {{ font-family: "JetBrains Mono", monospace; font-size: 0.74rem; color: var(--muted); }}
-    @media (max-width: 920px) {{
+    @media (max-width: 960px) {{
       .kpi-grid {{ grid-template-columns: repeat(2, 1fr); }}
-      .grid {{ grid-template-columns: 1fr; }}
+      .grid, .bottom-grid {{ grid-template-columns: 1fr; }}
     }}
   </style>
 </head>
@@ -187,10 +205,14 @@ DASHBOARD_HTML = f"""<!doctype html>
           <div class="brand-sub">Compensação UTC-3 · Auditoria de Anomalias · Sessão 2FA TOTP</div>
         </div>
       </div>
-      <button id="themeToggle" class="theme-btn" type="button">
-        <span id="themeIcon">☀</span>
-        <span id="themeLabel">Modo Claro</span>
-      </button>
+      <div style="display:flex;gap:0.55rem;align-items:center">
+        <button id="exportCsvBtn" class="theme-btn" type="button">⬇ Exportar CSV</button>
+        <button id="themeToggle" class="theme-btn" type="button">
+          <span id="themeIcon">☀</span>
+          <span id="themeLabel">Modo Claro</span>
+        </button>
+        <a href="/logout" class="theme-btn">Sair</a>
+      </div>
     </header>
 
     <main class="shell-body">
@@ -206,6 +228,22 @@ DASHBOARD_HTML = f"""<!doctype html>
         <div class="card"><h3>Horas por Projeto</h3><canvas id="projectChart"></canvas></div>
         <div class="card"><h3>Alertas de Auditoria</h3><ul id="alertsList"></ul></div>
       </section>
+
+      <section class="bottom-grid">
+        <div class="card"><h3>Evolução Diária (UTC-3)</h3><canvas id="dayChart"></canvas></div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;margin-bottom:0.75rem">
+            <h3 style="margin:0">Apontamentos Sincronizados</h3>
+            <input id="entryFilter" placeholder="Filtrar pessoa ou projeto..." style="padding:0.42rem 0.7rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.8rem" />
+          </div>
+          <div style="overflow-x:auto;max-height:240px">
+            <table>
+              <thead><tr><th>Data</th><th>Colaborador</th><th>Projeto / Tarefa</th><th>Horas</th></tr></thead>
+              <tbody id="entriesBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -214,6 +252,7 @@ DASHBOARD_HTML = f"""<!doctype html>
     let metricsCache = null;
     let userChartInst = null;
     let projChartInst = null;
+    let dayChartInst = null;
 
     function applyTheme(t) {{
       root.setAttribute("data-theme", t);
@@ -231,6 +270,7 @@ DASHBOARD_HTML = f"""<!doctype html>
 
       if (userChartInst) userChartInst.destroy();
       if (projChartInst) projChartInst.destroy();
+      if (dayChartInst) dayChartInst.destroy();
 
       userChartInst = new Chart(document.getElementById("userChart"), {{
         type: "bar",
@@ -239,6 +279,7 @@ DASHBOARD_HTML = f"""<!doctype html>
           datasets: [{{ label: "Horas", data: data.by_user.map(x => x.hours), backgroundColor: barColor, borderRadius: 6 }}]
         }},
         options: {{
+          animation: false,
           plugins: {{ legend: {{ labels: {{ color: txtColor }} }} }},
           scales: {{
             x: {{ ticks: {{ color: txtColor }}, grid: {{ color: gridColor }} }},
@@ -255,11 +296,59 @@ DASHBOARD_HTML = f"""<!doctype html>
         }},
         options: {{ animation: false, plugins: {{ legend: {{ labels: {{ color: txtColor }} }} }} }}
       }});
+
+      dayChartInst = new Chart(document.getElementById("dayChart"), {{
+        type: "line",
+        data: {{
+          labels: (data.by_day || []).map(x => x.work_date),
+          datasets: [{{ label: "Horas/Dia", data: (data.by_day || []).map(x => x.hours), borderColor: barColor, backgroundColor: barColor, tension: 0.3 }}]
+        }},
+        options: {{
+          animation: false,
+          plugins: {{ legend: {{ labels: {{ color: txtColor }} }} }},
+          scales: {{
+            x: {{ ticks: {{ color: txtColor }}, grid: {{ color: gridColor }} }},
+            y: {{ ticks: {{ color: txtColor }}, grid: {{ color: gridColor }} }}
+          }}
+        }}
+      }});
+    }}
+
+    function renderEntries() {{
+      if (!metricsCache) return;
+      const q = document.getElementById("entryFilter").value.trim().toLowerCase();
+      const rows = (metricsCache.entries || []).filter(e => !q || `${{e.user_name}} ${{e.project_name}} ${{e.task_title}}`.toLowerCase().includes(q));
+      const tbody = document.getElementById("entriesBody");
+      tbody.innerHTML = "";
+      rows.forEach(e => {{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="mono">${{e.work_date}}</td>
+          <td><strong>${{e.user_name}}</strong></td>
+          <td>${{e.project_name}}<br/><span class="mono">${{e.task_title || "(sem título)"}}</span></td>
+          <td class="mono">${{e.hours.toFixed(1)}}h</td>
+        `;
+        tbody.appendChild(tr);
+      }});
     }}
 
     applyTheme(localStorage.getItem("tt-theme") || "dark");
     document.getElementById("themeToggle").addEventListener("click", () => {{
       applyTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
+    }});
+    document.getElementById("entryFilter").addEventListener("input", renderEntries);
+
+    document.getElementById("exportCsvBtn").addEventListener("click", () => {{
+      if (!metricsCache) return;
+      const header = "entry_id,work_date,user_name,project_name,task_title,hours\\n";
+      const lines = (metricsCache.entries || []).map(e =>
+        `"${{e.entry_id}}","${{e.work_date}}","${{e.user_name}}","${{e.project_name}}","${{(e.task_title || "").replace(/"/g, '""')}}",${{e.hours}}`
+      ).join("\\n");
+      const blob = new Blob([header + lines], {{ type: "text/csv;charset=utf-8" }});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "timetracker_audit.csv";
+      a.click();
     }});
 
     fetch("/api/metrics").then(r => r.json()).then(data => {{
@@ -269,6 +358,7 @@ DASHBOARD_HTML = f"""<!doctype html>
       document.getElementById("totalProjects").textContent = data.by_project.length;
       document.getElementById("totalAlerts").textContent = data.alerts.length;
       renderCharts(data);
+      renderEntries();
 
       const ul = document.getElementById("alertsList");
       ul.innerHTML = "";
@@ -284,7 +374,13 @@ DASHBOARD_HTML = f"""<!doctype html>
 """
 
 
-def make_handler(db: AnalyticsDB, admin_user: str, admin_pass: str, totp_secret: str):
+def make_handler(db: AnalyticsDB, admin_user: str, admin_pass: str, totp_secret: str, demo_mode: bool = False):
+    helper_html = (
+        '<button id="fillDemoBtn" class="demo-btn" type="button">⚡ Autopreencher Credenciais Demo + TOTP Atual</button>'
+        if demo_mode
+        else ""
+    )
+
     class DashboardHandler(BaseHTTPRequestHandler):
         def _is_authenticated(self) -> bool:
             raw_cookie = self.headers.get("Cookie", "")
@@ -301,8 +397,29 @@ def make_handler(db: AnalyticsDB, admin_user: str, admin_pass: str, totp_secret:
             self.wfile.write(encoded)
 
         def do_GET(self) -> None:
+            if self.path == "/logout":
+                raw_cookie = self.headers.get("Cookie", "")
+                jar = cookies.SimpleCookie(raw_cookie)
+                token = jar.get("session_id")
+                if token:
+                    SESSIONS.discard(token.value)
+                self.send_response(302)
+                self.send_header("Set-Cookie", "session_id=; Max-Age=0; Path=/")
+                self.send_header("Location", "/login")
+                self.end_headers()
+                return
+            if self.path == "/api/demo-totp" and demo_mode:
+                payload = json.dumps(
+                    {"username": admin_user, "password": admin_pass, "totp": generate_totp(totp_secret)}
+                ).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+                return
             if self.path == "/login":
-                self._send_html(LOGIN_HTML.replace("{error_block}", ""))
+                self._send_html(LOGIN_HTML.replace("{error_block}", "").replace("{demo_helper}", helper_html))
                 return
             if not self._is_authenticated():
                 self.send_response(302)
@@ -337,7 +454,7 @@ def make_handler(db: AnalyticsDB, admin_user: str, admin_pass: str, totp_secret:
                 self.end_headers()
                 return
             err = f'<div class="err">{html.escape("Credenciais ou código 2FA inválidos.")}</div>'
-            self._send_html(LOGIN_HTML.replace("{error_block}", err), status=401)
+            self._send_html(LOGIN_HTML.replace("{error_block}", err).replace("{demo_helper}", helper_html), status=401)
 
     return DashboardHandler
 
@@ -358,7 +475,7 @@ def main() -> None:
     totp_secret = os.getenv("DASHBOARD_TOTP_SECRET", "JBSWY3DPEHPK3PXP")
 
     db = AnalyticsDB(db_path)
-    server = HTTPServer((host, port), make_handler(db, admin_user, admin_pass, totp_secret))
+    server = HTTPServer((host, port), make_handler(db, admin_user, admin_pass, totp_secret, demo_mode=args.demo))
     print(f"Dashboard rodando em http://{host}:{port}")
     if args.demo:
         print(f"[DEMO] Usuário: {admin_user} | Senha: {admin_pass} | Código 2FA agora: {generate_totp(totp_secret)}")

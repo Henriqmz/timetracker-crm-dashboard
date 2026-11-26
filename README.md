@@ -1,6 +1,8 @@
 # TimeTracker Sync & Analytics Dashboard (com 2FA TOTP)
 
-Serviço em Python para sincronização de apontamentos de horas entre plataformas de *time tracking* e CRM/gestão de projetos, acompanhado de um **Dashboard Web Analítico protegido por autenticação em 2 fatores (TOTP — RFC 6238)**.
+![Interface TimeTracker Analytics](docs/preview.png)
+
+Serviço em Python para sincronização de apontamentos de horas entre plataformas de *time tracking* e CRM/gestão de projetos, acompanhado de um **Dashboard Web Analítico protegido por autenticação em 2 fatores (TOTP — RFC 6238)**, gráfico de evolução diária, filtro de lançamentos e exportação CSV.
 
 ## Destaques Técnicos
 
